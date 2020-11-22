@@ -1,0 +1,29 @@
+{
+  "name": "jncinet/qihucms-information",
+  "description": "qihucms information.",
+  "keywords": [
+    "qihucms",
+    "information"
+  ],
+  "homepage": "https://www.qihucms.com",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "zhangye",
+      "email": "y@qilephp.com"
+    }
+  ],
+  "require": {},
+  "autoload": {
+    "psr-4": {
+      "Qihucms\\Information\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Qihucms\\Information\\InformationServiceProvider"
+      ]
+    }
+  }
+}
