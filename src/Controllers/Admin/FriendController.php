@@ -3,6 +3,7 @@
 namespace Qihucms\Information\Controllers\Admin;
 
 use App\Admin\Controllers\Controller;
+use App\Models\User;
 use Qihucms\Information\Models\InformationFriend;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
@@ -68,11 +69,11 @@ class FriendController extends Controller
         $show->field('id', __('information::information_friend.id'));
         $show->field('user', __('information::information_friend.user_id'))
             ->as(function () {
-                return $this->user ? $this->user->username : '会员不存在';
+                return $this->user ? $this->user->username : '';
             });
         $show->field('friend', __('information::information_friend.friend_id'))
             ->as(function () {
-                return $this->friend ? $this->friend->username : '会员不存在';
+                return $this->friend ? $this->friend->username : '';
             });
         $show->field('friend_name', __('information::information_friend.friend_name'));
         $show->field('status', __('information::information_friend.status.label'))
@@ -92,9 +93,27 @@ class FriendController extends Controller
     {
         $form = new Form(new InformationFriend());
 
-        $form->number('friend_name', __('information::information_friend.friend_name'));
+        $form->select('user_id', __('information::information_friend.user_id'))
+            ->options(function ($use_id) {
+                $model = User::find($use_id);
+                if ($model) {
+                    return [$model->id => $model->username];
+                }
+            })
+            ->ajax(route('admin.select.user'))
+            ->rules('required');
+        $form->select('friend_id', __('information::information_friend.friend_id'))
+            ->options(function ($use_id) {
+                $model = User::find($use_id);
+                if ($model) {
+                    return [$model->id => $model->username];
+                }
+            })
+            ->ajax(route('admin.select.user'))
+            ->rules('required');
+        $form->text('friend_name', __('information::information_friend.friend_name'));
         $form->select('status', __('information::information_friend.status.label'))
-        ->options(__('information::information_friend.status.value'));
+            ->options(__('information::information_friend.status.value'));
 
         return $form;
     }

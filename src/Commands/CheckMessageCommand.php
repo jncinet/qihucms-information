@@ -3,6 +3,7 @@
 namespace Qihucms\Information\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class CheckMessageCommand extends Command
 {
@@ -34,7 +35,7 @@ class CheckMessageCommand extends Command
     public function handle()
     {
         // 删除一个月前的消息
-        $count = \DB::table('information_messages')->where('status', 1)
+        $count = DB::table('information_messages')->where('status', 1)
             ->where('created_at', '<', now()->subMonths()->toDateTimeString())
             ->delete();
 

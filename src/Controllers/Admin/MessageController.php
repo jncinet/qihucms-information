@@ -73,7 +73,7 @@ class MessageController extends Controller
         $show->field('information_friend_id', __('information::information_message.information_friend_id'));
         $show->field('user', __('information::information_message.user_id'))
             ->as(function () {
-                return $this->user ? $this->user->username : '会员不存在';
+                return $this->user ? $this->user->username : '';
             });
         $show->field('type', __('information::information_message.type.label'))
             ->using(__('information::information_message.type.value'));

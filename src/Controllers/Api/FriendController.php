@@ -2,8 +2,9 @@
 
 namespace Qihucms\Information\Controllers\Api;
 
-use App\Http\Controllers\Api\ApiController;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Qihucms\Information\Models\InformationFriend;
 use Qihucms\Information\Models\InformationFriendPolicy;
 use Qihucms\Information\Models\InformationMessage;
@@ -11,7 +12,7 @@ use Qihucms\Information\Requests\StoreFriendRequest;
 use Qihucms\Information\Resources\FriendCollection;
 use Qihucms\Information\Resources\Friend as FriendResource;
 
-class FriendController extends ApiController
+class FriendController extends Controller
 {
     public function __construct()
     {
@@ -29,7 +30,7 @@ class FriendController extends ApiController
         $limit = $request->get('limit', 15);
 
         $condition = [
-            ['user_id', '=', \Auth::id()],
+            ['user_id', '=', Auth::id()],
             ['status', '=', (int)$request->get('status', 1)]
         ];
 
@@ -53,12 +54,14 @@ class FriendController extends ApiController
         if ($friend_policy) {
             if (!empty($friend_policy->password)) {
                 if ($friend_policy->password != $request->input('password')) {
-                    return $this->jsonResponse(['password' => '密码不正确'], '', 422);
+                    return $this->jsonResponse(
+                        ['password' => __('information::message.password_error')], '', 422);
                 }
                 $status = 1;
             } elseif (!empty($friend_policy->answer)) {
                 if ($friend_policy->answer != $request->input('answer')) {
-                    return $this->jsonResponse(['answer' => '答案不正确'], '', 422);
+                    return $this->jsonResponse(
+                        ['answer' => __('information::message.answer_error')], '', 422);
                 }
                 $status = 1;
             } else {
@@ -71,14 +74,14 @@ class FriendController extends ApiController
         if ($status == 1) {
             // 通过密码和问题的直接成为好友，创建自己的好友记录
             InformationFriend::updateOrCreate(
-                ['friend_id' => $friend_id, 'user_id' => \Auth::id()],
+                ['friend_id' => $friend_id, 'user_id' => Auth::id()],
                 ['status' => 1]
             );
         }
 
         // 创建供好友审核的记录
         $item = InformationFriend::firstOrCreate(
-            ['user_id' => $friend_id, 'friend_id' => \Auth::id()],
+            ['user_id' => $friend_id, 'friend_id' => Auth::id()],
             ['status' => $status]
         );
 
@@ -94,7 +97,7 @@ class FriendController extends ApiController
      */
     public function show(Request $request, $id)
     {
-        $friend = InformationFriend::where('user_id', \Auth::id())->where('friend_id', $id)
+        $friend = InformationFriend::where('user_id', Auth::id())->where('friend_id', $id)
             ->where('status', 0)->first();
 
         if ($friend) {
@@ -112,14 +115,14 @@ class FriendController extends ApiController
 
             // 通过好友请求后，创建申请加好友会员的记录
             InformationFriend::updateOrCreate(
-                ['user_id' => $id, 'friend_id' => \Auth::id()],
+                ['user_id' => $id, 'friend_id' => Auth::id()],
                 ['status' => 1]
             );
 
             return $this->jsonResponse(['friend_id' => $id, 'status' => 1]);
         }
 
-        return $this->jsonResponse(['数据不存在'], '', 422);
+        return $this->jsonResponse([__('information::message.params_error')], '', 422);
     }
 
     /**
@@ -132,7 +135,7 @@ class FriendController extends ApiController
     public function update(Request $request, $id)
     {
         if ($request->has('friend_name')) {
-            $result = InformationFriend::where('user_id', \Auth::id())->where('friend_id', $id)
+            $result = InformationFriend::where('user_id', Auth::id())->where('friend_id', $id)
                 ->update(['friend_name' => $request->input('friend_name')]);
 
             if ($result) {
@@ -140,7 +143,7 @@ class FriendController extends ApiController
             }
         }
 
-        return $this->jsonResponse(['参数错误'], '', 422);
+        return $this->jsonResponse([__('information::message.params_error')], '', 422);
     }
 
     /**
@@ -151,7 +154,7 @@ class FriendController extends ApiController
      */
     public function destroy($id)
     {
-        $model = InformationFriend::where('user_id', \Auth::user())->where('friend_id', $id)->first();
+        $model = InformationFriend::where('user_id', Auth::user())->where('friend_id', $id)->first();
 
         if ($model) {
             // 删除消息记录
@@ -161,11 +164,11 @@ class FriendController extends ApiController
             $model->delete();
 
             // 更新好友状态
-            InformationFriend::where('friend_id', \Auth::user())->where('user_id', $id)->update(['status' => 3]);
+            InformationFriend::where('friend_id', Auth::user())->where('user_id', $id)->update(['status' => 3]);
 
             return $this->jsonResponse(['friend_id' => $id]);
         }
 
-        return $this->jsonResponse(['删除失败'], '', 422);
+        return $this->jsonResponse([__('information::message.params_error')], '', 422);
     }
 }

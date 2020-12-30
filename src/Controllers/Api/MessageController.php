@@ -2,10 +2,11 @@
 
 namespace Qihucms\Information\Controllers\Api;
 
-use App\Http\Controllers\Api\ApiController;
+use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Qihucms\Information\Models\InformationFriend;
 use Qihucms\Information\Models\InformationMessage;
 use Qihucms\Information\Requests\StoreMessageRequest;
@@ -13,7 +14,7 @@ use Qihucms\Information\Resources\FriendCollection;
 use Qihucms\Information\Resources\MessageCollection;
 use Qihucms\Information\Resources\Message as MessageResource;
 
-class MessageController extends ApiController
+class MessageController extends Controller
 {
     public function __construct()
     {
@@ -30,7 +31,7 @@ class MessageController extends ApiController
     {
         $limit = $request->get('limit', 15);
 
-        $items = InformationFriend::where('user_id', '=', \Auth::id())
+        $items = InformationFriend::where('user_id', '=', Auth::id())
             ->has('information_messages')
             ->withCount(['information_messages' => function (Builder $query) {
                 $query->where('status', '=', 0);
@@ -48,8 +49,8 @@ class MessageController extends ApiController
      */
     public function show($id)
     {
-        if (InformationFriend::where('user_id', \Auth::id())->where('id', $id)->doesntExist()) {
-            return $this->jsonResponse(['参数错误'], '', 422);
+        if (InformationFriend::where('user_id', Auth::id())->where('id', $id)->doesntExist()) {
+            return $this->jsonResponse([__('information::message.params_error')], '', 422);
         }
 
         $items = InformationMessage::where('information_friend_id', $id)->paginate();
@@ -70,22 +71,24 @@ class MessageController extends ApiController
         // 发布者好友关系
         $information_user = InformationFriend::find($data['information_friend_id']);
         if (!$information_user || $information_user->status != 1) {
-            return $this->jsonResponse(['你们还不是好友，不能发消息'], '', 422);
+            return $this->jsonResponse(
+                [__('information::message.no_friend_no_message')], '', 422);
         }
 
-        if ($information_user->user_id != \Auth::id()) {
-            return $this->jsonResponse(['参数错误'], '', 422);
+        if ($information_user->user_id != Auth::id()) {
+            return $this->jsonResponse([__('information::message.params_error')], '', 422);
         }
 
         // 接收者好友关系
         $information_friend = InformationFriend::where('user_id', $information_user->friend_id)
             ->where('friend_id', $information_user->user_id)->first();
         if (!$information_friend || $information_friend->status != 1) {
-            return $this->jsonResponse(['你们还不是好友，不能发消息'], '', 422);
+            return $this->jsonResponse(
+                [__('information::message.no_friend_no_message')], '', 422);
         }
 
         // 附加数据
-        $data['user_id'] = \Auth::id();
+        $data['user_id'] = Auth::id();
 
         // 发布者的消息
         $data['status'] = 0; // *** 此状态是反馈给发布者的，所以未读状态放在发布都的信息中 ***
@@ -109,7 +112,7 @@ class MessageController extends ApiController
     {
         $information_user = InformationFriend::find($id);
 
-        if ($information_user && $information_user->user_id == \Auth::id()) {
+        if ($information_user && $information_user->user_id == Auth::id()) {
             $information_friend = InformationFriend::where('user_id', $information_user->friend_id)
                 ->where('friend_id', $information_user->user_id)->first();
 
@@ -119,7 +122,7 @@ class MessageController extends ApiController
             return $this->jsonResponse(['id' => $id]);
         }
 
-        return $this->jsonResponse(['参数错误'], '', 422);
+        return $this->jsonResponse([__('information::message.params_error')], '', 422);
     }
 
     /**
@@ -136,7 +139,7 @@ class MessageController extends ApiController
         // 删除所有供自己读取的消息，ID为好友关系ID
         if ($request->has('all')) {
             // 验证关系是否属于当前用户
-            $friend = InformationFriend::where('id', $id)->where('user_id', \Auth::id())->first();
+            $friend = InformationFriend::where('id', $id)->where('user_id', Auth::id())->first();
             if ($friend) {
                 InformationMessage::where('information_friend_id', $friend->id)->delete();
 
@@ -144,7 +147,7 @@ class MessageController extends ApiController
             }
         } elseif ($request->has('ids')) {
             // 验证关系是否属于当前用户
-            $friend = InformationFriend::where('id', $id)->where('user_id', \Auth::id())->first();
+            $friend = InformationFriend::where('id', $id)->where('user_id', Auth::id())->first();
             if ($friend && is_array($request->input('ids'))) {
                 InformationMessage::whereIn('id', $request->input('ids'))->delete();
 
@@ -155,13 +158,13 @@ class MessageController extends ApiController
             $model = InformationMessage::find($id);
 
             // 验证消息是否属于当前用于
-            if ($model->information_friend->user_id == \Auth::id()) {
+            if ($model->information_friend->user_id == Auth::id()) {
                 $model->delete();
 
                 return $this->jsonResponse(['id' => $id]);
             }
         }
 
-        return $this->jsonResponse(['参数错误'], '', 422);
+        return $this->jsonResponse([__('information::message.params_error')], '', 422);
     }
 }

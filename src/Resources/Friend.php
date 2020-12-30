@@ -5,7 +5,6 @@ namespace Qihucms\Information\Resources;
 use App\Http\Resources\User\User;
 use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Str;
 use Qihucms\Information\Models\InformationMessage;
 
 class Friend extends JsonResource

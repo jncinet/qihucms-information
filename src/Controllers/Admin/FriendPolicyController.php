@@ -82,7 +82,7 @@ class FriendPolicyController extends Controller
                     return [$model->id => $model->username];
                 }
             })
-            ->ajax(route('admin.api.users'))
+            ->ajax(route('admin.select.user'))
             ->rules('required');
         $form->text('question', __('information::information_friend_policy.question'));
         $form->text('answer', __('information::information_friend_policy.answer'));
