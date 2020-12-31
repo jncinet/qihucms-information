@@ -5,7 +5,7 @@ use Illuminate\Routing\Router;
 // 接口
 Route::group([
     'namespace' => 'Qihucms\Information\Controllers\Api',
-    'prefix' => 'information',
+    'prefix' => config('qihu.information_prefix', 'information'),
     'middleware' => ['api'],
     'as' => 'api.information.'
 ], function (Router $router) {

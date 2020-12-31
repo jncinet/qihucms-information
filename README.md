@@ -28,39 +28,25 @@ $ php artisan information:checkMessage
 
 ## 使用
 
-### 路由能参数说明
+### 路由参数说明
 
-#### 我的关系
-
-```php
-route('api.invite.my')
-请求：GET
-地址：/invite/my
-返回值：
-{
-    'user_id' => 会员ID号,
-    'parent' => {师父信息},
-    'grandfather' => {师祖信息},
-    'son_count' => 徒弟数,
-    'grandson_count' => 徒孙数,
-}
-
-```
-
-#### 我的徒弟列表
+#### 好友列表
 
 ```php
-route('api.invite.td')
 请求：GET
-地址：/invite/td
-参数：
-int $limit （选填）显示条数
+地址：information/friends?status=1,好友状态&limit=15每页条数&page=页码
 返回值：
 {
     data: [
         {
-            user_id: 用户ID号
-            user：{会员信息}
+            'id' => 1,
+            'user_id' => 2,
+            'friend' => {好友会员资料},
+            'friend_name' => "好友1", // 好友备注名
+            'status' => 1, // 好友状态
+            'information_messages_count' => 0, // 消息总数
+            'information_messages_first' => "你好", // 最新消息
+            'created_at' => "1秒前",
         },
         ...
     ],
@@ -69,20 +55,97 @@ int $limit （选填）显示条数
 }
 ```
 
-#### 我的徒孙列表
+#### 添加好友
+
+> 如果会员设置了加好友规则，则须通过验证才能成为好友。
 
 ```php
-route('api.invite.ts')
-请求：GET
-地址：/invite/ts
+请求：POST
+地址：information/friends
 参数：
-int $limit （选填）显示条数
+{
+    friend_id: 要添加会员ID,
+    password: 好友验证密码,
+    answer: 好友验证问题答案
+}
+返回值：
+{
+            'id' => 1,
+            'user_id' => 2,
+            'friend' => {好友会员资料},
+            'friend_name' => "好友1", // 好友备注名
+            'status' => 1, // 好友状态
+            'information_messages_count' => 0, // 消息总数
+            'information_messages_first' => "你好", // 最新消息
+            'created_at' => "1秒前",
+}
+
+```
+
+#### 审核好友申请
+
+```php
+请求：GET
+地址：information/friends/{id=好友ID}?status={有此参数无论何值均为不通过，无此参数即为通过}
+返回值：
+{
+    status: SUCCESS,
+    result: {
+        friend_id: 好友ID,
+        status: 1, // ['待确认', '已通过', '已拒绝', '已删除']
+    }
+}
+```
+
+#### 修改好友备注名称
+
+```php
+请求：PATCH|PUT
+地址：information/friends/{id=好友ID}
+参数：{
+    friend_name: '备注名'
+}
+返回值：
+{
+    status: SUCCESS,
+    result: {
+        friend_id: 好友ID,
+        friend_name: '备注名'
+    }
+}
+```
+
+#### 删除好友
+
+```php
+请求：DELETE
+地址：information/friends/{id=好友ID}
+返回值：
+{
+    status: SUCCESS,
+    result: {
+        friend_id: 好友ID,
+    }
+}
+```
+
+#### 好友列表
+
+```php
+请求：GET
+地址：information/messages?status=1,好友状态&limit=15每页条数&page=页码
 返回值：
 {
     data: [
         {
-            user_id: 用户ID号
-            user：{会员信息}
+            'id' => 1,
+            'user_id' => 2,
+            'friend' => {好友会员资料},
+            'friend_name' => "好友1", // 好友备注名
+            'status' => 1, // 好友状态
+            'information_messages_count' => 0, // 消息总数
+            'information_messages_first' => "你好", // 最新消息
+            'created_at' => "1秒前",
         },
         ...
     ],
@@ -90,6 +153,8 @@ int $limit （选填）显示条数
     meta:{}
 }
 ```
+
+
 
 ### 事件调用
 

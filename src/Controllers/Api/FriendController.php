@@ -97,10 +97,13 @@ class FriendController extends Controller
      */
     public function show(Request $request, $id)
     {
-        $friend = InformationFriend::where('user_id', Auth::id())->where('friend_id', $id)
-            ->where('status', 0)->first();
+        $friend = InformationFriend::where('user_id', Auth::id())->where('friend_id', $id)->first();
 
         if ($friend) {
+            if ($friend->status > 0) {
+                return $this->jsonResponse(['friend_id' => $id, 'status' => $friend->status]);
+            }
+
             // 拒绝添加好友
             if ($request->has('status')) {
                 $friend->status = 2;
@@ -139,7 +142,10 @@ class FriendController extends Controller
                 ->update(['friend_name' => $request->input('friend_name')]);
 
             if ($result) {
-                return $this->jsonResponse(['friend_id' => $id]);
+                return $this->jsonResponse([
+                    'friend_id' => $id,
+                    'friend_name' => $request->input('friend_name')
+                ]);
             }
         }
 
