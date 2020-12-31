@@ -2,7 +2,6 @@
 
 namespace Qihucms\Information\Resources;
 
-use App\Http\Resources\User\User;
 use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -18,10 +17,8 @@ class Message extends JsonResource
     {
         return [
             'id' => $this->id,
-            'from_user' => new User($this->from_user),
-            'to_user' => new User($this->to_user),
-            'sender' => $this->sender,
-            'receiver' => $this->receiver,
+            'user_id' => $this->user_id,
+            'information_friend' => new Friend($this->information_friend),
             'type' => $this->type,
             'message' => $this->message,
             'status' => $this->status,

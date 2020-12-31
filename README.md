@@ -24,7 +24,7 @@ $ php artisan information:checkMessage
 ## 后台菜单
 + 会员消息 `information/messages`
 + 会员好友 `information/friends`
-+ 好友验证 `information/friend-policies`
++ 好友验证问题 `information/friend-policies`
 
 ## 使用
 
@@ -129,18 +129,18 @@ $ php artisan information:checkMessage
 }
 ```
 
-#### 好友列表
+#### 有消息的好友列表
 
 ```php
 请求：GET
-地址：information/messages?status=1,好友状态&limit=15每页条数&page=页码
+地址：information/messages/{id=好友关系ID}
 返回值：
 {
     data: [
         {
             'id' => 1,
             'user_id' => 2,
-            'friend' => {好友会员资料},
+            'information_friend' => {好友会员资料},
             'friend_name' => "好友1", // 好友备注名
             'status' => 1, // 好友状态
             'information_messages_count' => 0, // 消息总数
@@ -154,13 +154,121 @@ $ php artisan information:checkMessage
 }
 ```
 
+#### 好友消息列表
 
+```php
+请求：GET
+地址：information/messages?limit=15每页条数&page=页码
+返回值：
+{
+    data: [
+        {
+            'id' => 1,
+            'user_id' => 2,
+            'information_friend' => {
+                'id' => 1,
+                'user_id' => 2,
+                'friend' => {好友会员资料},
+                'friend_name' => "好友1", // 好友备注名
+                'status' => 1, // 好友状态
+                'information_messages_count' => 0, // 消息总数
+                'information_messages_first' => "你好", // 最新消息
+                'created_at' => "1秒前",
+            },
+            'type' => 0, // ['文本', '图片', '视频', '音频', '分享连接']
+            'message' => "消息内容",
+            'status' => 1, // 消息状态
+            'created_at' => "1秒前",
+        },
+        ...
+    ],
+    links:{},
+    meta:{}
+}
+```
+
+#### 发布消息
+
+```
+请求：POST
+地址：information/messages
+参数：{
+    'information_friend_id' => '好友关系ID',
+    'type' => 0, // '消息类型'
+    'message' => '消息内容',
+}
+返回：{
+    'id' => 1,
+    'user_id' => 2,
+    'information_friend' => {
+        'id' => 1,
+        'user_id' => 2,
+        'friend' => {好友会员资料},
+        'friend_name' => "好友1", // 好友备注名
+        'status' => 1, // 好友状态
+        'information_messages_count' => 0, // 消息总数
+        'information_messages_first' => "你好", // 最新消息
+        'created_at' => "1秒前",
+    },
+    'type' => 0, // ['文本', '图片', '视频', '音频', '分享连接']
+    'message' => "消息内容",
+    'status' => 1, // 消息状态
+    'created_at' => "1秒前",
+}
+```
+
+#### 更新消息阅读状态
+
+```
+请求：PATCH|PUT
+地址：information/messages/{id=好友关系ID}
+返回：{
+    "id": 1 // 好友关系ID
+}
+```
+
+#### 清空消息
+
++ 请求方式：DELETE
++ 请求地址：information/messages/{id=好友关系ID}?all=true
++ 返回值
+```
+{
+    "id": 1 // 好友关系ID
+    "all": true
+}
+```
+
+#### 批量删除消息
+
++ 请求方式：DELETE
++ 请求地址：information/messages/{id=好友关系ID}?ids=1,2,3
++ 返回值
+```
+{
+    "id": 1 // 好友关系ID
+    "ids": [1,2,3]
+}
+```
+
+#### 删除消息一条消息
+
++ 请求方式：DELETE
++ 请求地址：information/messages/{id=消息ID}
++ 返回值
+```
+{
+    "id": 1 // 消息ID
+}
+```
 
 ### 事件调用
 
 ```php
-// 创建推荐关系
-Qihucms\Invite\Events\Invited
+// 添加好友
+Qihucms\Information\Events\AddFriend;
+// 发送消息
+Qihucms\Information\Events\SendMessage;
 ```
 
 # 数据库

@@ -103,9 +103,9 @@ class MessageController extends Controller
     }
 
     /**
-     * 更新消息阅读状态
+     * 更新好友消息阅读状态
      *
-     * @param $id
+     * @param int $id 好友关系ID
      * @return \Illuminate\Http\JsonResponse
      */
     public function update($id)
@@ -148,10 +148,13 @@ class MessageController extends Controller
         } elseif ($request->has('ids')) {
             // 验证关系是否属于当前用户
             $friend = InformationFriend::where('id', $id)->where('user_id', Auth::id())->first();
-            if ($friend && is_array($request->input('ids'))) {
-                InformationMessage::whereIn('id', $request->input('ids'))->delete();
+            $ids = $request->input('ids');
+            $ids = explode(',', $ids);
+            $ids = array_filter($ids);
+            if ($friend && count($ids)) {
+                InformationMessage::whereIn('id', $ids)->delete();
 
-                return $this->jsonResponse(['id' => $id, 'ids' => true]);
+                return $this->jsonResponse(['id' => $id, 'ids' => $ids]);
             }
         } else {
             // 删除一条消息时，ID为消息ID
